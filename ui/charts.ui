@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>Charts</class>
- <widget class="QMainWindow" name="Charts">
+ <widget class="QMainWindow" name="Ussurvescom_figures">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -35,12 +35,113 @@
     </property>
     <addaction name="action"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>График</string>
+    </property>
+    <addaction name="action_2"/>
+    <addaction name="action_1_2"/>
+    <addaction name="action_3_4"/>
+    <addaction name="action_5_7"/>
+    <addaction name="action_7_9"/>
+    <addaction name="action_9_11"/>
+    <addaction name="action_11_13"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action">
    <property name="text">
     <string>Открыть</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Вес</string>
+   </property>
+  </action>
+  <action name="action_1_2">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Датчики 1-2 </string>
+   </property>
+  </action>
+  <action name="action_3_4">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Датчики 3-4</string>
+   </property>
+  </action>
+  <action name="action_5_6">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Датчики 5-6</string>
+   </property>
+  </action>
+  <action name="action_7_8">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Датчики 7-8</string>
+   </property>
+  </action>
+  <action name="action_9_10">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Датчики 9-10</string>
+   </property>
+  </action>
+  <action name="action_11_12">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Датчики 11-12</string>
+   </property>
+  </action>
+  <action name="action_5_7">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Датчики 5-6</string>
+   </property>
+  </action>
+  <action name="action_7_9">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Датчики 7-8</string>
+   </property>
+  </action>
+  <action name="action_9_11">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Датчики 9-10</string>
+   </property>
+  </action>
+  <action name="action_11_13">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Датчики 11-12</string>
    </property>
   </action>
  </widget>

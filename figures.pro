@@ -12,18 +12,23 @@ SOURCES += \
 	src/data_parser.cpp \
 	src/main.cpp \
 	src/charts.cpp \
-	src/qcustomplot.cpp
+        src/qcustomplot.cpp \
 
 HEADERS += \
 	include/data_parser.h \
 	include/charts.h \
-	qcustomplot.h
+        qcustomplot.h \
 
 FORMS += \
 	ui/charts.ui
 
 RESOURCES += \ 
 	figures.qrc
+
+RC_ICONS += icon.ico
+
+TARGET = Ussurvescom_figures
+DESTDIR = $$PWD/dist
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
