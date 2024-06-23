@@ -10,17 +10,26 @@
 #include <QFile>
 #include <QCloseEvent>
 
+DataParserWorker::DataParserWorker(const QString &filePath, QObject *parent)
+    : QObject(parent), m_filePath(filePath) {}
+
+DataParserWorker::~DataParserWorker() {}
+
+void DataParserWorker::process() {
+    DataParser *dataParser = new DataParser(m_filePath.toStdString());
+    emit dataParsed(dataParser);
+}
+
 Charts::Charts(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Charts),
     m_dataParser(nullptr)
 {
-    this->setWindowTitle("Ussuvescom-figures"); // Устанавливаем заголовок окна
+    this->setWindowTitle("Ussuvescom-figures");
     ui->setupUi(this);
 
-    connect(ui->action, &QAction::triggered, this, &Charts::on_actionOpen_triggered); // Подключаем сигнал открытия файла
+    connect(ui->action, &QAction::triggered, this, &Charts::on_actionOpen_triggered);
 
-    // Маппинг действий на имена данных для графиков
     actionToDataName[ui->action_2] = "OSWES";
     actionToDataName[ui->action_1_2] = "WES12";
     actionToDataName[ui->action_3_4] = "WES34";
@@ -29,32 +38,26 @@ Charts::Charts(QWidget *parent) :
     actionToDataName[ui->action_9_11] = "WES910";
     actionToDataName[ui->action_11_13] = "WES1112";
 
-    // Подключаем все действия к общему слоту для обработки переключений графиков
     for (auto action : actionToDataName.keys()) {
         connect(action, &QAction::toggled, this, &Charts::on_plotToggled);
     }
 
     QIcon icon(":/icon.ico");
-    setWindowIcon(icon); // Устанавливаем иконку окна
+    setWindowIcon(icon);
+    setAcceptDrops(true);
 
-    setAcceptDrops(true); // Разрешаем перетаскивание файлов в окно
-
-    // Устанавливаем путь к файлу настроек
     m_settingsFilePath = QDir(QCoreApplication::applicationDirPath()).filePath("settings.json");
-
-    // Читаем настройки при запуске программы
     readSettings();
 }
 
 Charts::~Charts()
 {
     delete ui;
-    delete m_dataParser; // Удаляем парсер данных при уничтожении объекта
+    delete m_dataParser;
 }
 
 void Charts::dragEnterEvent(QDragEnterEvent *event)
 {
-    // Проверяем, содержит ли перетаскиваемый объект URL
     if (event->mimeData()->hasUrls()) {
         event->acceptProposedAction();
     }
@@ -77,7 +80,6 @@ void Charts::dropEvent(QDropEvent *event)
 
 void Charts::on_actionOpen_triggered()
 {
-    // Открываем диалог для выбора XML файла
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open XML File"), "", tr("XML Files (*.xml)"));
     if (!fileName.isEmpty()) {
         openFile(fileName);
@@ -86,27 +88,40 @@ void Charts::on_actionOpen_triggered()
 
 void Charts::openFile(const QString &filePath)
 {
-    // Открываем файл и создаем парсер данных
-    qDebug() << "Opening file:" << filePath;
+    setLoading(true);
+    QThread *thread = new QThread;
+    DataParserWorker *worker = new DataParserWorker(filePath);
+    worker->moveToThread(thread);
+
+    connect(thread, &QThread::started, worker, &DataParserWorker::process);
+    connect(worker, &DataParserWorker::dataParsed, this, &Charts::handleDataParsed);
+    connect(worker, &DataParserWorker::dataParsed, worker, &DataParserWorker::deleteLater);
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+
+    thread->start();
+}
+
+void Charts::handleDataParsed(DataParser *dataParser)
+{
     delete m_dataParser;
-    m_dataParser = new DataParser(filePath.toStdString());
-    plotData(); // Обновляем графики
+    m_dataParser = dataParser;
+    plotData();
+    setLoading(false);
 }
 
 void Charts::on_plotToggled(bool checked)
 {
     Q_UNUSED(checked);
-    plotData(); // Обновляем графики при переключении
+    plotData();
 }
 
 void Charts::plotData()
 {
-    if (!m_dataParser) return; // Если нет данных, ничего не делаем
+    if (!m_dataParser) return;
 
-    ui->customPlot->clearGraphs(); // Очищаем текущие графики
+    ui->customPlot->clearGraphs();
 
-    QVector<double> xData = m_dataParser->getXData(); // Получаем данные по оси X
-    // Маппинг имен данных на соответствующие данные и стили графиков
+    QVector<double> xData = m_dataParser->getXData();
     QMap<QString, QVector<double>> dataMap = {
         {"OSWES", m_dataParser->getYDataOSWES()},
         {"WES12", m_dataParser->getYDataWES12()},
@@ -137,8 +152,7 @@ void Charts::plotData()
         {"WES1112", "11-12"}
     };
 
-    int graphIndex = 0; // Индекс для добавляемых графиков
-    // Добавляем графики для включенных действий
+    int graphIndex = 0;
     for (auto action : actionToDataName.keys()) {
         if (action->isChecked()) {
             QString dataName = actionToDataName[action];
@@ -150,28 +164,25 @@ void Charts::plotData()
         }
     }
 
-    ui->customPlot->rescaleAxes(); // Масштабируем оси
-    ui->customPlot->replot(); // Перерисовываем график
-    ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables | QCP::iSelectAxes | QCP::iSelectLegend | QCP::iSelectItems | QCP::iMultiSelect); // Включаем взаимодействия
+    ui->customPlot->rescaleAxes();
+    ui->customPlot->replot();
+    ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables | QCP::iSelectAxes | QCP::iSelectLegend | QCP::iSelectItems | QCP::iMultiSelect);
 
-    // Добавляем легенду, если есть хотя бы один график
     ui->customPlot->legend->setVisible(graphIndex > 0);
     if (graphIndex > 0) {
         ui->customPlot->legend->setBrush(QBrush(QColor(255,255,255,230)));
 
         QFont legendFont = font();
-        legendFont.setPointSize(10); // Устанавливаем размер шрифта для легенды
+        legendFont.setPointSize(10);
         ui->customPlot->legend->setFont(legendFont);
-        ui->customPlot->legend->setRowSpacing(-3); // Устанавливаем расстояние между строками легенды
+        ui->customPlot->legend->setRowSpacing(-3);
     }
 }
 
 void Charts::readSettings()
 {
-    // Открываем файл настроек
     QFile settingsFile(m_settingsFilePath);
     if (!settingsFile.exists()) {
-        // Если файл не существует, создаем его с настройками по умолчанию
         QJsonObject defaultSettings;
         for (auto key : actionToDataName.values()) {
             defaultSettings[key] = false;
@@ -183,21 +194,20 @@ void Charts::readSettings()
             settingsFile.close();
         }
 
-        // Устанавливаем настройки по умолчанию в интерфейсе
         for (auto action : actionToDataName.keys()) {
             action->setChecked(false);
         }
     } else {
-        // Если файл существует, читаем его и применяем настройки
         if (settingsFile.open(QIODevice::ReadOnly)) {
-            QByteArray saveData = settingsFile.readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(settingsFile.readAll());
             settingsFile.close();
-            QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
-            QJsonObject settings = loadDoc.object();
+            QJsonObject settings = doc.object();
             for (auto action : actionToDataName.keys()) {
                 QString dataName = actionToDataName[action];
                 if (settings.contains(dataName)) {
                     action->setChecked(settings[dataName].toBool());
+                } else {
+                    action->setChecked(false);
                 }
             }
         }
@@ -206,25 +216,33 @@ void Charts::readSettings()
 
 void Charts::writeSettings()
 {
-    // Создаем объект JSON с текущими настройками
+    QFile settingsFile(m_settingsFilePath);
     QJsonObject settings;
     for (auto action : actionToDataName.keys()) {
         QString dataName = actionToDataName[action];
         settings[dataName] = action->isChecked();
     }
 
-    // Записываем настройки в файл
     QJsonDocument doc(settings);
-    QFile settingsFile(m_settingsFilePath);
     if (settingsFile.open(QIODevice::WriteOnly)) {
         settingsFile.write(doc.toJson());
         settingsFile.close();
     }
 }
 
+void Charts::setLoading(bool loading)
+{
+    if (loading) {
+        statusBar()->showMessage("Загрузка...");
+    } else {
+        statusBar()->clearMessage();
+    }
+}
+
 void Charts::closeEvent(QCloseEvent *event)
 {
-    writeSettings(); // Записываем настройки перед закрытием
+    writeSettings();
     QMainWindow::closeEvent(event);
 }
+
 

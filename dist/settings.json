@@ -1,9 +1,9 @@
 {
-    "OSWES": false,
+    "OSWES": true,
     "WES1112": false,
     "WES12": false,
     "WES34": false,
-    "WES56": false,
+    "WES56": true,
     "WES78": false,
     "WES910": false
 }
