@@ -35,7 +35,7 @@ class Charts : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit Charts(QWidget *parent = nullptr);
+    explicit Charts(int argc, char *argv[], QWidget *parent = nullptr);
     ~Charts();
 
 protected:
@@ -62,3 +62,4 @@ private:
 };
 
 #endif // CHARTS_H
+

@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
 
 	QApplication a(argc, argv);
-	Charts w;
+    Charts w(argc, argv);
 	w.show();
 	return a.exec();
 }

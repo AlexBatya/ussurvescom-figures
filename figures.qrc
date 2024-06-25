@@ -2,5 +2,6 @@
 <RCC version="1.0">
 	<qresource>
 		<file>icon.ico</file>
+		<file>loading.gif</file> <!-- Добавляем строку для загрузки GIF -->
 	</qresource>
 </RCC>

@@ -20,7 +20,7 @@ void DataParserWorker::process() {
     emit dataParsed(dataParser);
 }
 
-Charts::Charts(QWidget *parent) :
+Charts::Charts(int argc, char *argv[], QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Charts),
     m_dataParser(nullptr)
@@ -48,6 +48,13 @@ Charts::Charts(QWidget *parent) :
 
     m_settingsFilePath = QDir(QCoreApplication::applicationDirPath()).filePath("settings.json");
     readSettings();
+
+    if (argc > 1) {
+        QString filePath = argv[1];
+        if (QFileInfo::exists(filePath) && filePath.endsWith(".xml")) {
+            openFile(filePath);
+        }
+    }
 }
 
 Charts::~Charts()
@@ -244,5 +251,3 @@ void Charts::closeEvent(QCloseEvent *event)
     writeSettings();
     QMainWindow::closeEvent(event);
 }
-
-

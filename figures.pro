@@ -14,15 +14,18 @@ SOURCES += \
 	src/main.cpp \
 	src/charts.cpp \
         src/qcustomplot.cpp \
+        src/windows/weightofend.cpp
 
 HEADERS += \
         include/fileprocessor.h \
 	include/data_parser.h \
 	include/charts.h \
         qcustomplot.h \
+        include/windows/weightofend.h
 
 FORMS += \
-	ui/charts.ui
+        ui/charts.ui \
+        ui/windows/weightofend.ui
 
 RESOURCES += \ 
 	figures.qrc
