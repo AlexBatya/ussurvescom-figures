@@ -9,6 +9,8 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        src/axeswindow.cpp \
+        src/axes_parser.cpp \
         src/fileprocessor.cpp \
 	src/data_parser.cpp \
 	src/main.cpp \
@@ -17,6 +19,8 @@ SOURCES += \
         src/windows/weightofend.cpp
 
 HEADERS += \
+        include/axeswindow.h \
+        include/axes_parser.h \
         include/fileprocessor.h \
 	include/data_parser.h \
 	include/charts.h \
@@ -24,6 +28,7 @@ HEADERS += \
         include/windows/weightofend.h
 
 FORMS += \
+        ui/axeswindow.ui \
         ui/charts.ui \
         ui/windows/weightofend.ui
 

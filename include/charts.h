@@ -7,6 +7,8 @@
 #include <QJsonDocument>
 #include <QFile>
 #include <QThread>
+#include <QStandardPaths>
+#include <QDir>
 #include "include/data_parser.h"
 
 namespace Ui {
@@ -62,4 +64,3 @@ private:
 };
 
 #endif // CHARTS_H
-

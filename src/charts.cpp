@@ -9,6 +9,7 @@
 #include <QJsonDocument>
 #include <QFile>
 #include <QCloseEvent>
+#include <QStandardPaths>
 
 DataParserWorker::DataParserWorker(const QString &filePath, QObject *parent)
     : QObject(parent), m_filePath(filePath) {}
@@ -46,7 +47,11 @@ Charts::Charts(int argc, char *argv[], QWidget *parent) :
     setWindowIcon(icon);
     setAcceptDrops(true);
 
-    m_settingsFilePath = QDir(QCoreApplication::applicationDirPath()).filePath("settings.json");
+    QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir().mkpath(appDataPath); // Ensure the directory exists
+    m_settingsFilePath = QDir(appDataPath).filePath("ussurvescom_figures/settings.json");
+    QDir().mkpath(QFileInfo(m_settingsFilePath).absolutePath()); // Ensure the settings directory exists
+    qDebug() << "Settings file path:" << m_settingsFilePath;
     readSettings();
 
     if (argc > 1) {
@@ -190,6 +195,7 @@ void Charts::readSettings()
 {
     QFile settingsFile(m_settingsFilePath);
     if (!settingsFile.exists()) {
+        qDebug() << "Settings file does not exist. Creating default settings.";
         QJsonObject defaultSettings;
         for (auto key : actionToDataName.values()) {
             defaultSettings[key] = false;
@@ -199,12 +205,16 @@ void Charts::readSettings()
         if (settingsFile.open(QIODevice::WriteOnly)) {
             settingsFile.write(doc.toJson());
             settingsFile.close();
+            qDebug() << "Default settings written to" << m_settingsFilePath;
+        } else {
+            qDebug() << "Failed to open settings file for writing:" << settingsFile.errorString();
         }
 
         for (auto action : actionToDataName.keys()) {
             action->setChecked(false);
         }
     } else {
+        qDebug() << "Settings file exists. Reading settings from" << m_settingsFilePath;
         if (settingsFile.open(QIODevice::ReadOnly)) {
             QJsonDocument doc = QJsonDocument::fromJson(settingsFile.readAll());
             settingsFile.close();
@@ -217,12 +227,15 @@ void Charts::readSettings()
                     action->setChecked(false);
                 }
             }
+        } else {
+            qDebug() << "Failed to open settings file for reading:" << settingsFile.errorString();
         }
     }
 }
 
 void Charts::writeSettings()
 {
+    qDebug() << "Writing settings to" << m_settingsFilePath;
     QFile settingsFile(m_settingsFilePath);
     QJsonObject settings;
     for (auto action : actionToDataName.keys()) {
@@ -234,6 +247,9 @@ void Charts::writeSettings()
     if (settingsFile.open(QIODevice::WriteOnly)) {
         settingsFile.write(doc.toJson());
         settingsFile.close();
+        qDebug() << "Settings successfully written to" << m_settingsFilePath;
+    } else {
+        qDebug() << "Failed to open settings file for writing:" << settingsFile.errorString();
     }
 }
 
